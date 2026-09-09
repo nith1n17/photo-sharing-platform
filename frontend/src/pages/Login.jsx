@@ -1,6 +1,3 @@
-// 
-
-// **********************************
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -278,26 +275,22 @@ function Login() {
               </span>
             </button>
 
-            {/* Sign Up Link */}
-            <p className="text-center text-sm text-slate-600 font-light">
-              Don't have an account?{" "}
-              <a
-                href="/register"
-                className="font-semibold text-slate-900 hover:text-blue-600 transition-colors duration-200"
-              >
-                Create one
-              </a>
-            </p>
+            
           </form>
 
           {/* Security Info */}
-          <div className="mt-8 pt-6 border-t border-slate-200/50">
-            <div className="flex items-start gap-3 text-xs text-slate-600">
-              <svg className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-              </svg>
-              <p className="font-light leading-relaxed">
-                Your account is protected with enterprise-grade security. Your credentials are encrypted in transit.
+          <div className="mt-8 pt-6 border-t border-slate-200/50 flex justify-center">
+            <div className="flex items-center justify-center gap-3 text-center">
+              <svg
+                  className="w-6 h-6 text-slate-400 flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M17 8h-1V6a4 4 0 00-8 0v2H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V10a2 2 0 00-2-2zm-5 9a2 2 0 110-4 2 2 0 010 4zm2-9h-4V6a2 2 0 114 0v2z" />
+                </svg>
+              
+              <p className="text-sm text-slate-600 font-light">
+                Your credentials are encrypted in transit.
               </p>
             </div>
           </div>

@@ -317,7 +317,7 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 overflow-hidden relative">
+   <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-100 overflow-hidden relative">
       {/* Animated Background Canvas */}
       <canvas
         id="admin-canvas"

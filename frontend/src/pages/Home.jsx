@@ -1,24 +1,3 @@
-// function Home() {
-//   return (
-//     <div className="min-h-screen flex flex-col items-center justify-center gap-6">
-//       <h1 className="text-4xl font-bold">
-//         Photo Sharing Platform
-//       </h1>
-
-//       <a
-//         href="/login"
-//         className="px-6 py-3 rounded-lg bg-black text-white hover:opacity-80"
-//       >
-//         Login
-//       </a>
-//     </div>
-//   );
-// }
-
-// export default Home;
-
-// ***************************
-
 import { useEffect } from "react";
 
 function Home() {
@@ -156,12 +135,6 @@ function Home() {
               </span>
             </a>
 
-            <a
-              href="/register"
-              className="px-8 py-4 bg-white border border-slate-300 text-slate-900 font-semibold rounded-xl transition-all duration-300 hover:border-slate-900 hover:shadow-lg hover:shadow-slate-900/10 active:scale-95"
-            >
-              Sign Up
-            </a>
           </div>
         </div>
 
