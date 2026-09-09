@@ -37,9 +37,12 @@ class LogoutView(APIView):
             refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response({"message": "Logged out successfully."})
+            return Response({"message": "Logged out successfully"})
         except Exception:
-            return Response({"error": "Invalid refresh token."}, status=400)
+            return Response(
+                {"error": "Invalid refresh token"},
+                status=400
+            )
 
 
 class EventListCreateView(generics.ListCreateAPIView):
@@ -47,8 +50,6 @@ class EventListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.role != User.Role.ADMIN:
-            return Event.objects.none()
         return Event.objects.filter(created_by=self.request.user)
 
     def perform_create(self, serializer):
@@ -57,9 +58,14 @@ class EventListCreateView(generics.ListCreateAPIView):
         serializer.save(created_by=self.request.user)
 
 
-class TeamMemberCreateView(generics.CreateAPIView):
+class TeamMemberCreateView(generics.ListCreateAPIView):
     serializer_class = TeamMemberCreateSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.role != User.Role.ADMIN:
+            raise PermissionDenied("Only admins can view team members.")
+        return User.objects.filter(role=User.Role.TEAM_MEMBER)
 
     def perform_create(self, serializer):
         if self.request.user.role != User.Role.ADMIN:
@@ -74,11 +80,6 @@ class EventMemberCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         if self.request.user.role != User.Role.ADMIN:
             raise PermissionDenied("Only admins can assign team members.")
-
-        event = serializer.validated_data["event"]
-        if event.created_by != self.request.user:
-            raise PermissionDenied("You do not own this event.")
-
         serializer.save()
 
 
@@ -88,16 +89,13 @@ class AssignedEventsView(generics.ListAPIView):
 
     def get_queryset(self):
         if self.request.user.role != User.Role.TEAM_MEMBER:
-            return Event.objects.none()
-        return Event.objects.filter(members__user=self.request.user)
+            raise PermissionDenied("Only team members can access assigned events.")
+        return Event.objects.filter(members__user=self.request.user).distinct()
 
 
 class PhotoUploadView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
-
-    MAX_FILE_SIZE = 10 * 1024 * 1024
-    ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
     def post(self, request, event_id):
         if request.user.role != User.Role.TEAM_MEMBER:
@@ -107,38 +105,46 @@ class PhotoUploadView(APIView):
         if not event.members.filter(user=request.user).exists():
             raise PermissionDenied("You are not assigned to this event.")
 
-        files = request.FILES.getlist("photos")
-        if not files:
-            return Response({"error": "No photos uploaded."}, status=400)
-
-        uploaded = []
-        for photo_file in files:
-            if photo_file.content_type not in self.ALLOWED_TYPES:
-                return Response(
-                    {"error": f"Unsupported file type: {photo_file.content_type}."},
-                    status=400,
-                )
-
-            if photo_file.size > self.MAX_FILE_SIZE:
-                return Response(
-                    {"error": f"{photo_file.name} exceeds the 10MB limit."},
-                    status=400,
-                )
-
-            key = f"events/{event.id}/{uuid4()}_{photo_file.name}"
-            upload_file(photo_file, key, photo_file.content_type)
-
-            uploaded.append(
-                Photo.objects.create(
-                    event=event,
-                    uploaded_by=request.user,
-                    filename=photo_file.name,
-                    storage_key=key,
-                    file_size=photo_file.size,
-                )
+        photo_files = request.FILES.getlist("photos")
+        if not photo_files:
+            return Response(
+                {"error": "No photos uploaded."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return Response(PhotoSerializer(uploaded, many=True).data, status=201)
+        allowed_types = ["image/jpeg", "image/png", "image/webp"]
+        max_size = 10 * 1024 * 1024
+        uploaded_photos = []
+
+        for photo_file in photo_files:
+            if photo_file.content_type not in allowed_types:
+                return Response(
+                    {"error": f"{photo_file.name}: Only JPEG, PNG and WebP images are allowed."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if photo_file.size > max_size:
+                return Response(
+                    {"error": f"{photo_file.name}: Maximum file size is 10 MB."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            storage_key = f"events/{event.id}/{uuid4()}_{photo_file.name}"
+            upload_file(photo_file, storage_key, photo_file.content_type)
+
+            photo = Photo.objects.create(
+                event=event,
+                uploaded_by=request.user,
+                filename=photo_file.name,
+                storage_key=storage_key,
+                file_size=photo_file.size,
+            )
+            uploaded_photos.append(photo)
+
+        return Response(
+            PhotoSerializer(uploaded_photos, many=True).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class EventPhotosView(generics.ListAPIView):
@@ -147,41 +153,74 @@ class EventPhotosView(generics.ListAPIView):
 
     def get_queryset(self):
         if self.request.user.role != User.Role.ADMIN:
-            return Photo.objects.none()
-        return Photo.objects.filter(event__id=self.kwargs["event_id"], event__created_by=self.request.user)
+            raise PermissionDenied("Only admins can view event photos.")
+
+        event = get_object_or_404(
+            Event,
+            id=self.kwargs["event_id"],
+            created_by=self.request.user,
+        )
+        return Photo.objects.filter(event=event)
 
 
 class PhotoSelectionView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, photo_id):
+    def patch(self, request, photo_id):
         if request.user.role != User.Role.ADMIN:
             raise PermissionDenied("Only admins can select photos.")
 
-        photo = get_object_or_404(Photo, id=photo_id, event__created_by=request.user)
-        photo.is_selected = not photo.is_selected
+        photo = get_object_or_404(
+            Photo,
+            id=photo_id,
+            event__created_by=request.user,
+        )
+        photo.is_selected = request.data.get("is_selected", photo.is_selected)
         photo.save(update_fields=["is_selected"])
+        return Response(PhotoSerializer(photo).data)
 
-        return Response({"id": str(photo.id), "is_selected": photo.is_selected})
 
-
-class GalleryCreateView(generics.CreateAPIView):
-    serializer_class = GalleryCreateSerializer
+class GalleryCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        if self.request.user.role != User.Role.ADMIN:
+    def get(self, request, event_id):
+        if request.user.role != User.Role.ADMIN:
+            raise PermissionDenied("Only admins can view galleries.")
+
+        gallery = get_object_or_404(
+            Gallery,
+            event_id=event_id,
+            event__created_by=request.user
+        )
+        return Response(GallerySerializer(gallery).data)
+
+    def post(self, request, event_id):
+        if request.user.role != User.Role.ADMIN:
             raise PermissionDenied("Only admins can create galleries.")
 
-        event = get_object_or_404(Event, id=self.kwargs["event_id"], created_by=self.request.user)
+        event = get_object_or_404(Event, id=event_id, created_by=request.user)
         selected_photos = Photo.objects.filter(event=event, is_selected=True)
-        if not selected_photos.exists():
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError("Select at least one photo before creating a gallery.")
 
-        gallery = serializer.save(event=event)
-        GalleryPhoto.objects.bulk_create(
-            [GalleryPhoto(gallery=gallery, photo=photo) for photo in selected_photos]
+        if not selected_photos.exists():
+            return Response(
+                {"error": "Select at least one photo before creating a gallery."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = GalleryCreateSerializer(
+            data={"event": event.id, "pin": request.data.get("pin")}
+        )
+        serializer.is_valid(raise_exception=True)
+        gallery = serializer.save()
+
+        GalleryPhoto.objects.bulk_create([
+            GalleryPhoto(gallery=gallery, photo=photo)
+            for photo in selected_photos
+        ])
+
+        return Response(
+            GallerySerializer(gallery).data,
+            status=status.HTTP_201_CREATED
         )
 
 
@@ -192,34 +231,60 @@ class GalleryPublishView(APIView):
         if request.user.role != User.Role.ADMIN:
             raise PermissionDenied("Only admins can publish galleries.")
 
-        gallery = get_object_or_404(Gallery, id=gallery_id, event__created_by=request.user)
-        from django.utils import timezone
+        gallery = get_object_or_404(
+            Gallery,
+            id=gallery_id,
+            event__created_by=request.user
+        )
+
+        if gallery.published:
+            return Response(
+                {"message": "Gallery is already published."},
+                status=status.HTTP_200_OK
+            )
+
         gallery.published = True
+        from django.utils import timezone
         gallery.published_at = timezone.now()
         gallery.save(update_fields=["published", "published_at"])
 
-        return Response(GallerySerializer(gallery).data)
+        return Response(
+            GallerySerializer(gallery).data,
+            status=status.HTTP_200_OK
+        )
 
 
 class GalleryVerifyView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, gallery_token):
-        gallery = get_object_or_404(Gallery, gallery_token=gallery_token, published=True)
+        gallery = get_object_or_404(
+            Gallery,
+            gallery_token=gallery_token,
+            published=True
+        )
         pin = request.data.get("pin")
+
         if not pin:
-            return Response({"error": "PIN is required."}, status=400)
+            return Response(
+                {"error": "PIN is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         from django.contrib.auth.hashers import check_password
         if not check_password(pin, gallery.pin_hash):
-            return Response({"error": "Invalid PIN."}, status=401)
+            return Response(
+                {"error": "Invalid PIN."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         from django.core import signing
         access_token = signing.dumps({"gallery_token": gallery.gallery_token})
+
         return Response({
             "message": "PIN verified successfully.",
             "gallery_token": gallery.gallery_token,
-            "access_token": access_token,
+            "access_token": access_token
         })
 
 
@@ -227,25 +292,39 @@ class PublicGalleryView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, gallery_token):
-        gallery = get_object_or_404(Gallery, gallery_token=gallery_token, published=True)
+        gallery = get_object_or_404(
+            Gallery,
+            gallery_token=gallery_token,
+            published=True
+        )
         access_token = request.headers.get("X-Gallery-Access-Token")
+
         if not access_token:
-            return Response({"error": "Gallery access denied. Enter the PIN first."}, status=403)
+            return Response(
+                {"error": "Gallery access denied. Enter the PIN first."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         from django.core import signing
         from django.core.signing import BadSignature
         try:
             token_data = signing.loads(access_token, max_age=3600)
         except BadSignature:
-            return Response({"error": "Gallery access denied. Token expired or invalid."}, status=403)
+            return Response(
+                {"error": "Gallery access denied. Token expired or invalid."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         if token_data.get("gallery_token") != gallery.gallery_token:
-            return Response({"error": "Gallery access denied."}, status=403)
+            return Response(
+                {"error": "Gallery access denied."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         photos = Photo.objects.filter(galleryphoto__gallery=gallery)
         return Response({
             "gallery_token": gallery.gallery_token,
-            "photos": PhotoSerializer(photos, many=True).data,
+            "photos": PhotoSerializer(photos, many=True).data
         })
 
 
@@ -262,7 +341,11 @@ class EventGalleryView(APIView):
             .order_by("-created_at")
             .first()
         )
+
         if not gallery:
-            return Response({"error": "No gallery found for this event."}, status=404)
+            return Response(
+                {"error": "No gallery found for this event."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         return Response(GallerySerializer(gallery).data)
