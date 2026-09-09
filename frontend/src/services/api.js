@@ -2,7 +2,7 @@ import axios from "axios";
 import { getAccessToken } from "../utils/auth";
 
 const api = axios.create({
-    baseURL: "https://photo-sharing-platform-9145.onrender.com/api/",
+    baseURL: import.meta.env.VITE_API_BASE_URL,
     withCredentials: true,
 });
 
