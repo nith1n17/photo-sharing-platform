@@ -8,21 +8,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email", "role"]
         read_only_fields = ["id", "role"]
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = User
-        fields = ["username", "email", "password"]
-
-    def create(self, validated_data):
-        return User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data.get("email", ""),
-            password=validated_data["password"],
-            role=User.Role.TEAM_MEMBER,
-        )
-
 
 class EventSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)
@@ -81,6 +66,7 @@ class GalleryPhotoSerializer(serializers.ModelSerializer):
         model = GalleryPhoto
         fields = ["id", "gallery", "photo"]
 
+
 class TeamMemberCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -97,6 +83,7 @@ class TeamMemberCreateSerializer(serializers.ModelSerializer):
             role=User.Role.TEAM_MEMBER,
         )
 
+
 class EventMemberCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventMember
@@ -104,10 +91,9 @@ class EventMemberCreateSerializer(serializers.ModelSerializer):
 
     def validate_user(self, user):
         if user.role != User.Role.TEAM_MEMBER:
-            raise serializers.ValidationError(
-                "User must be a team member."
-            )
+            raise serializers.ValidationError("User must be a team member.")
         return user
+
 
 class GalleryCreateSerializer(serializers.ModelSerializer):
     pin = serializers.CharField(write_only=True, min_length=4, max_length=6)
@@ -121,11 +107,9 @@ class GalleryCreateSerializer(serializers.ModelSerializer):
         import secrets
 
         pin = validated_data.pop("pin")
-
         gallery = Gallery.objects.create(
             event=validated_data["event"],
             gallery_token=secrets.token_urlsafe(16),
             pin_hash=make_password(pin),
         )
-
         return gallery
