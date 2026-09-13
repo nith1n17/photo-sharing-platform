@@ -114,15 +114,15 @@ function PublicGallery() {
       setError("");
       setVerifying(true);
 
-      const verifyResponse = await axios.post(
-        `http://127.0.0.1:8000/api/gallery/${galleryToken}/verify/`,
+      const verifyResponse = await api.post(
+        `gallery/${galleryToken}/verify/`,
         { pin }
       );
 
       const accessToken = verifyResponse.data.access_token;
 
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/gallery/${galleryToken}/`,
+      const response = await api.get(
+        `gallery/${galleryToken}/`,
         {
           headers: {
             "X-Gallery-Access-Token": accessToken,
