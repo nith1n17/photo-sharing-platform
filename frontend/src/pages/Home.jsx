@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+const logoUrl = new URL("/photosharelogo.png", import.meta.url).href;
+
 function Home() {
   useEffect(() => {
     // Create animated background elements
@@ -88,7 +90,7 @@ function Home() {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <img
-              src="/photosharelogo.png"
+              src={logoUrl}
               alt="PhotoShare"
               className="w-14 h-14 object-contain"
             />

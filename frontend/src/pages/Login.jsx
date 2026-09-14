@@ -1,8 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { saveTokens } from "../utils/auth";
+
+const logoUrl = new URL("/photosharelogo.png", import.meta.url).href;
 
 function Login() {
   const navigate = useNavigate();
@@ -129,10 +130,10 @@ function Login() {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-6">
               <img
-                src="photosharelogo.png"
-                alt="PhotoShare"
-                className="w-14 h-14 object-contain"
-              />
+                  src={logoUrl}
+                  alt="PhotoShare"
+                  className="w-14 h-14 object-contain"
+                />
             </div>
 
             <h1 className="text-4xl font-black text-slate-900 mb-2">
@@ -225,7 +226,7 @@ function Login() {
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path d="M13.5 6H5.424M13.5 6H18M13.5 6a11.979 11.979 0 016.77 2.23M13.5 6A11.986 11.986 0 0012 21a11.986 11.986 0 01-1.5-15m1.5 0a11.979 11.979 0 00-6.77 2.23M9.75 9.75L4.5 15m15-6l5.25 6" />
+                      <path d="M13.5 6H5.424M13.5 6H18M13.5 6a11.979 11.979 0 016.77 2.23M13.5 6A11.986 11.986 0 0112 21a11.986 11.986 0 01-1.5-15m1.5 0a11.979 11.979 0 00-6.77 2.23M9.75 9.75L4.5 15m15-6l5.25 6" />
                     </svg>
                   )}
                 </button>
