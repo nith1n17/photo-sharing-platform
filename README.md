@@ -88,71 +88,64 @@ Customer views published photos
 
 The following screenshots document the main application flows.
 
-> **Add the images to `docs/screenshots/` using the filenames below. The image lines are intentionally left ready to uncomment after the files are added to the repository.**
+
 
 ### Landing Page
 
 The public landing page introduces the platform and provides the login entry point.
 
-**ADD IMAGE: `docs/screenshots/home.png`**
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 19 33 PM" src="https://github.com/user-attachments/assets/32c3d016-8b08-4f53-a3e7-2c1c7c698768" />
 
-<!-- ![PhotoShare Landing Page](docs/screenshots/home.png) -->
 
 ### Login
 
 Users authenticate through the JWT login flow. The interface also provides password visibility controls and role-based redirection after authentication.
 
-**ADD IMAGE: `docs/screenshots/login.png`**
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 19 44 PM" src="https://github.com/user-attachments/assets/e682bda9-4333-4e81-b8f0-a38d1d66d71a" />
 
-<!-- ![PhotoShare Login](docs/screenshots/login.png) -->
+
 
 ### Admin Dashboard
 
 The Admin dashboard contains event creation, Team Member creation, event assignment, event listing, and photo management.
 
-**ADD IMAGE: `docs/screenshots/admin-dashboard.png`**
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 20 55 PM" src="https://github.com/user-attachments/assets/8963d3a8-5c47-4e15-a900-bb66df6c565f" />
 
-<!-- ![Admin Dashboard](docs/screenshots/admin-dashboard.png) -->
 
 ### Admin Photo Review & Selection
 
 Admins can review uploaded photos for an event and select the images that should be included in the customer gallery.
 
-**ADD IMAGE: `docs/screenshots/admin-photo-selection.png`**
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 24 26 PM" src="https://github.com/user-attachments/assets/48e83f9b-0899-4776-a5bc-71b5889008e9" />
 
-<!-- ![Admin Photo Selection](docs/screenshots/admin-photo-selection.png) -->
 
 ### Gallery Creation & Publishing
 
 After selecting photos, the Admin supplies a gallery PIN, creates the gallery, and publishes it. The UI then exposes the gallery token and shareable URL.
 
-**ADD IMAGE: `docs/screenshots/gallery-publishing.png`**
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 25 06 PM" src="https://github.com/user-attachments/assets/352ecebb-c1d5-4a91-adcc-fae525817dca" />
 
-<!-- ![Gallery Publishing](docs/screenshots/gallery-publishing.png) -->
 
 ### Team Member Dashboard
 
 Team Members see their assigned events and can upload multiple photos to an event.
 
-**ADD IMAGE: `docs/screenshots/team-dashboard.png`**
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 23 00 PM" src="https://github.com/user-attachments/assets/4172c1e7-dae0-4a79-8e16-6371ed259173" />
 
-<!-- ![Team Member Dashboard](docs/screenshots/team-dashboard.png) -->
 
 ### Customer PIN Verification
 
 A customer opens the shareable gallery URL and enters the gallery PIN before photos are returned by the API.
 
-**ADD IMAGE: `docs/screenshots/gallery-pin.png`**
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 25 31 PM" src="https://github.com/user-attachments/assets/059904f1-21fa-4e45-b394-27c6ece0295f" />
 
-<!-- ![Gallery PIN Verification](docs/screenshots/gallery-pin.png) -->
 
 ### Published Gallery
 
 After successful verification, the customer receives the selected gallery photos and can browse them through the responsive gallery and fullscreen viewer.
 
-**ADD IMAGE: `docs/screenshots/published-gallery.png`**
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 25 31 PM" src="https://github.com/user-attachments/assets/946bbe1e-6aab-4f4b-8776-a80aee5a1868" />
 
-<!-- ![Published Gallery](docs/screenshots/published-gallery.png) -->
 
 ---
 
