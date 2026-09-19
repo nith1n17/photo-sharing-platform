@@ -137,7 +137,8 @@ Team Members see their assigned events and can upload multiple photos to an even
 
 A customer opens the shareable gallery URL and enters the gallery PIN before photos are returned by the API.
 
-<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 25 31 PM" src="https://github.com/user-attachments/assets/059904f1-21fa-4e45-b394-27c6ece0295f" />
+<img width="1470" height="956" alt="Screenshot 2026-09-19 at 10 25 38 PM" src="https://github.com/user-attachments/assets/22141f20-e0e5-4ef9-9e69-05fecb4a38f4" />
+
 
 
 ### Published Gallery
